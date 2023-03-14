@@ -27,7 +27,4 @@ replay_pid*
 .idea/
 
 # IML files
-.iml
-
-#
-.gitattributes
+.IML
