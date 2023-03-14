@@ -27,4 +27,4 @@ replay_pid*
 .idea/
 
 # IML files
-.IML
+*.iml
