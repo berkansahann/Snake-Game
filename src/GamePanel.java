@@ -8,7 +8,6 @@ public class GamePanel extends JPanel implements ActionListener {
     static final int SCREEN_WIDTH = 600;
     static final int SCREEN_HEIGHT = 600;
     static final int UNIT_SIZE = 25;
-    //static final int GAME_UNITS = (SCREEN_WIDTH*SCREEN_HEIGHT)/UNIT_SIZE;
     static final int DELAY = 75;
     int[] x;
     int[] y;
@@ -16,32 +15,43 @@ public class GamePanel extends JPanel implements ActionListener {
     int applesEaten;
     int appleX;
     int appleY;
-    char direction; //= 'R';
+    char direction;
     boolean running = false;
+    boolean gameOver = false;
     Timer timer;
     Random random;
     JButton restartButton;
+    JButton startButton;
 
     GamePanel() {
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
-        this.setBackground(Color.BLACK);
+        this.setBackground(Color.gray);
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
-        startGame();
+        startGameButton();
+    }
+
+    public void startGameButton() {
+        startButton = new JButton("start");
+        startButton.setPreferredSize(new Dimension(100, 40));
+        startButton.addActionListener(this);
+        startButton.setBackground(Color.lightGray);
+        startButton.setFont(new Font("Courier", Font.BOLD, 30));
+        startButton.setBorder(BorderFactory.createLineBorder(Color.black, 3));
+        add(startButton);
     }
 
     public void startGame() {
+        running = true;
         direction = 'R';
         x = new int[SCREEN_WIDTH];
         y = new int[SCREEN_HEIGHT];
-
         applesEaten = 0;
         bodyParts = 6;
-        newApple();
-        running = true;
         timer = new Timer(DELAY, this);
         timer.start();
+        newApple();
     }
 
     public void newApple() {
@@ -71,35 +81,37 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    public void bodyCollisions() {
+    public void collisions() {
         //checks if head collides with body
         for (int i = bodyParts; i > 0; i--) {
             if ((x[0] == x[i]) && (y[0] == y[i])) {
                 running = false;
+                gameOver = true;
                 break;
             }
         }
-    }
-
-    public void borderCollisions() {
         //checks if head touches left border
         if (x[0] < 0) {
             running = false;
+            gameOver = true;
         }
         //checks if head touches right border
         if (x[0] > SCREEN_WIDTH - UNIT_SIZE) {
             running = false;
+            gameOver = true;
         }
         //checks if head touches top border
         if (y[0] < 0) {
             running = false;
+            gameOver = true;
         }
         //checks if head touches bottom border
         if (y[0] > SCREEN_HEIGHT - UNIT_SIZE) {
             running = false;
+            gameOver = true;
         }
 
-        if (!running) {
+        if (gameOver) {
             timer.stop();
         }
         
@@ -112,21 +124,22 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void draw(Graphics g) {
         if (running) {
+            drawScore(g);
             g.setColor(Color.red);
             g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
 
             for (int i = 0; i < bodyParts; i++) {
                 if (i == 0) {
-                    g.setColor(new Color(0, 150, 0));
-                    g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                    g.setColor(new Color (231, 177, 10));
+                    g.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 } else {
-                    g.setColor(new Color(0, 200, 0));
-                    g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                    g.setColor(new Color (220, 132, 73));
+                    g.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
             }
-            drawScore(g);
-        } else {
+        } else if (gameOver){
             gameOver(g);
+            drawScore(g);
         }
     }
 
@@ -139,7 +152,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void gameOver(Graphics g) {
         //Game Over Texts
-        g.setColor(Color.red);
+        g.setColor(Color.pink);
         g.setFont(new Font("", Font.BOLD, 75));
         FontMetrics metrics1 = getFontMetrics(g.getFont());
         g.drawString("Game Over", (SCREEN_WIDTH - metrics1.stringWidth("GameOver")) / 2, SCREEN_HEIGHT / 2);
@@ -149,11 +162,11 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void restartGame() {
         restartButton = new JButton("Restart");
-        restartButton.setBounds((SCREEN_WIDTH / 2) - UNIT_SIZE, SCREEN_HEIGHT - (UNIT_SIZE * 2), 100, 30);
+        restartButton.setBounds((SCREEN_WIDTH / 2) - (UNIT_SIZE * 2), (SCREEN_HEIGHT - 70), 100, 40);
         restartButton.addActionListener(this);
         restartButton.setBackground(Color.lightGray);
         restartButton.setFont(new Font("Courier", Font.BOLD, 15));
-        restartButton.setBorder(BorderFactory.createLineBorder(Color.gray, 3));
+        restartButton.setBorder(BorderFactory.createLineBorder(Color.black, 3));
         add(restartButton);
     }
 
@@ -163,11 +176,15 @@ public class GamePanel extends JPanel implements ActionListener {
         if (running) {
             move();
             checkApple();
-            bodyCollisions();
-            borderCollisions();
+            collisions();
         }
         if (e.getSource() == restartButton) {
             remove(restartButton);
+            gameOver = false;
+            startGame();
+        }
+        if (e.getSource() == startButton) {
+            remove(startButton);
             startGame();
         }
         repaint(); //for screen refresh
