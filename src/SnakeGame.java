@@ -6,9 +6,3 @@ public class SnakeGame {
     }
 }
 
-/*
-menu yapılacak
-high score tutulabilir
-high core listesi
-app fotosu
- */
